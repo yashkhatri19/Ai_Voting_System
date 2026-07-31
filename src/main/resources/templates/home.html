@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script>(function(){const saved=localStorage.getItem('theme');const theme=saved?saved:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-bs-theme',theme);})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VOTE INDIA | Secure Digital Voting Portal</title>
+    <!-- Bootstrap 5.3.3 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts: Editorial Serif and Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Global Design System & Variables */
+        :root, [data-bs-theme="light"] {
+            --bg-primary: #fbfaf7;
+            --bg-secondary: #f4f2ea;
+            --text-primary: #1c1d21;
+            --text-secondary: #5e6066;
+            --accent-saffron: #d97706;
+            --accent-green: #15803d;
+            --accent-beige: #e9e5d9;
+            --border-color: rgba(28, 29, 33, 0.08);
+            --transition-speed: 0.4s;
+            --font-editorial: 'Playfair Display', serif;
+            --font-headings: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        [data-bs-theme="dark"] {
+            --bg-primary: #121316;
+            --bg-secondary: #1a1c20;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --accent-saffron: #f59e0b;
+            --accent-green: #22c55e;
+            --accent-beige: #2e3138;
+            --border-color: rgba(243, 244, 246, 0.08);
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-body);
+            transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+            overflow-x: hidden;
+            letter-spacing: -0.01em;
+        }
+
+        /* Editorial Typography */
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-primary);
+            font-family: var(--font-headings);
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
+        }
+
+        .serif-text {
+            font-family: var(--font-editorial);
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .eyebrow {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-saffron);
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: inline-block;
+        }
+
+        p.lead-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        /* Spacing System */
+        .section-padding {
+            padding: 8rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Buttons & CTAs */
+        .btn-editorial-primary {
+            background-color: var(--text-primary);
+            color: var(--bg-primary);
+            border: 1px solid var(--text-primary);
+            padding: 0.9rem 2.2rem;
+            font-weight: 600;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-editorial-primary:hover {
+            background-color: var(--accent-saffron);
+            border-color: var(--accent-saffron);
+            color: #ffffff;
+            transform: translateY(-2px);
+        }
+
+        .btn-editorial-secondary {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.9rem 2.2rem;
+            font-weight: 600;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-editorial-secondary:hover {
+            border-color: var(--text-primary);
+            background-color: rgba(28, 29, 33, 0.03);
+            transform: translateY(-2px);
+        }
+        [data-bs-theme="dark"] .btn-editorial-secondary:hover {
+            background-color: rgba(243, 244, 246, 0.03);
+        }
+
+        .link-editorial {
+            color: var(--text-primary);
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.95rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 2px;
+            transition: all 0.3s ease;
+        }
+        .link-editorial:hover {
+            color: var(--accent-saffron);
+            border-color: var(--accent-saffron);
+            padding-left: 4px;
+        }
+
+        /* 1. Navbar */
+        .navbar-editorial {
+            background-color: rgba(251, 250, 247, 0.85);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.25rem 0;
+            transition: background-color var(--transition-speed) ease;
+        }
+        [data-bs-theme="dark"] .navbar-editorial {
+            background-color: rgba(18, 19, 22, 0.85);
+        }
+        .brand-title {
+            font-size: 1.15rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: var(--text-primary) !important;
+            line-height: 1.1;
+        }
+        .brand-subtitle {
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        .nav-link-editorial {
+            color: var(--text-primary) !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            transition: color 0.3s ease;
+            padding: 0.5rem 1rem !important;
+        }
+        .nav-link-editorial:hover {
+            color: var(--accent-saffron) !important;
+        }
+
+        /* 2. Hero Section */
+        .hero-editorial {
+            min-height: 85vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.65)), 
+                        url('https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=1920&q=80') no-repeat center center;
+            background-size: cover;
+            color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .hero-heading {
+            font-size: clamp(2.8rem, 6vw, 5.2rem);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+        }
+        .hero-sub {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 1.25rem;
+            max-width: 580px;
+            line-height: 1.5;
+        }
+
+        /* 4. What We Do */
+        .editorial-block {
+            border-bottom: 1px solid var(--border-color);
+            padding: 3.5rem 0;
+            transition: all 0.4s ease;
+        }
+        .editorial-block:last-child {
+            border-bottom: none;
+        }
+        .block-num {
+            font-family: var(--font-headings);
+            font-size: 1.75rem;
+            color: var(--accent-saffron);
+            font-weight: 700;
+        }
+        .block-visual {
+            background-color: var(--bg-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.4s ease;
+            height: 240px;
+        }
+        .block-visual svg {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .editorial-block:hover .block-visual svg {
+            transform: scale(1.08) rotate(2deg);
+        }
+
+        /* 5. How It Works Timeline */
+        .process-row {
+            border-left: 2px solid var(--border-color);
+            padding-left: 2rem;
+            position: relative;
+            margin-bottom: 3.5rem;
+        }
+        .process-dot {
+            position: absolute;
+            left: -7px;
+            top: 6px;
+            width: 12px;
+            height: 12px;
+            background-color: var(--accent-saffron);
+            border-radius: 50%;
+        }
+
+        /* 6. AI Rebuilt Section */
+        .ai-illustration-box {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 380px;
+        }
+
+        /* 7. Voting Rules (Dark Editorial) */
+        .dark-editorial-section {
+            background-color: #121316 !important;
+            color: #f3f4f6 !important;
+        }
+        .dark-editorial-section h2, .dark-editorial-section h3 {
+            color: #ffffff;
+        }
+        .dark-editorial-section .lead-text {
+            color: #9ca3af;
+        }
+        .rule-row {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2.2rem 0;
+        }
+        .rule-row:last-child {
+            border-bottom: none;
+        }
+        .rule-num {
+            font-family: var(--font-headings);
+            font-weight: 700;
+            color: var(--accent-saffron);
+            font-size: 1.2rem;
+        }
+
+        /* 8. Testimonials */
+        .testimonial-slider {
+            background-color: var(--bg-secondary);
+            border-radius: 4px;
+            padding: 4rem;
+            position: relative;
+            border: 1px solid var(--border-color);
+        }
+        .testimonial-quote {
+            font-family: var(--font-editorial);
+            font-size: 1.6rem;
+            line-height: 1.5;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+        }
+
+        /* 9. Large CTA */
+        .cta-editorial {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.75)), 
+                        url('https://images.unsplash.com/photo-1540910419892-4a36d2c3266c?auto=format&fit=crop&w=1920&q=80') no-repeat center center;
+            background-size: cover;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- 1. NAVBAR -->
+    <nav class="navbar navbar-expand-lg sticky-top navbar-editorial">
+        <div class="container">
+            <a class="d-flex flex-column text-decoration-none" th:href="@{/}">
+                <span class="brand-title">VOTE INDIA</span>
+                <span class="brand-subtitle">Digital Voting Portal</span>
+            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarEditorialContent" aria-controls="navbarEditorialContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarEditorialContent">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-1 gap-lg-3">
+                    <li class="nav-item"><a class="nav-link nav-link-editorial" href="#hero">Home</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-editorial" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-editorial" href="#what-we-do">What We Do</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-editorial" href="#how-it-works">How It Works</a></li>
+                    <li class="nav-item"><a class="nav-link nav-link-editorial" href="#rules">Security</a></li>
+                </ul>
+                <div class="d-flex gap-3 align-items-center">
+                    <a th:href="@{/login}" class="btn nav-link-editorial px-2 m-0 text-decoration-none">Login</a>
+                    <a th:href="@{/register}" class="btn-editorial-primary btn-sm text-decoration-none py-2 px-4">REGISTER TO VOTE</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 2. CINEMATIC HERO SECTION -->
+    <section id="hero" class="hero-editorial">
+        <div class="container py-5">
+            <div class="row">
+                <div class="col-lg-9">
+                    <span class="eyebrow" style="color: #ffb74d;">DIGITAL DEMOCRACY • SECURE PARTICIPATION</span>
+                    <h1 class="hero-heading mb-4">Your Voice.<br>Your Vote.<br>Your Democracy.</h1>
+                    <p class="hero-sub mb-5">A secure digital voting experience designed to help eligible voters participate, understand elections and make informed decisions.</p>
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+                        <a th:href="@{/register}" class="btn-editorial-primary text-decoration-none py-3 px-4">REGISTER TO VOTE &rarr;</a>
+                        <a href="#about" class="btn btn-outline-light rounded-1 py-3 px-4 fw-semibold">EXPLORE THE PORTAL</a>
+                    </div>
+                    <p class="mt-4 mb-0 text-white-50 small">Secure Registration • OTP Verification • One Vote Per Election</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. ABOUT THE PORTAL / ABOUT US -->
+    <section id="about" class="section-padding">
+        <div class="container">
+            <div class="row align-items-start g-5 mb-5">
+                <div class="col-lg-5">
+                    <span class="eyebrow">About the Portal</span>
+                    <h2 class="display-5 fw-bold">Democracy,<br><span class="serif-text">made more accessible.</span></h2>
+                </div>
+                <div class="col-lg-7">
+                    <p class="lead-text mb-4">This digital portal provides a centralized experience for voter registration, secure identity verification, and election awareness. Enforced with modern database security and role-based authentication, VOTE INDIA brings transparency to voter processes.</p>
+                    <p class="text-secondary mb-4">Our application lets verified citizens view running elections configured by administrators, study candidates, and review unbiased AI summaries in regional Indian languages. We verify voter legitimacy using email OTP verification during registration.</p>
+                    <a href="#what-we-do" class="link-editorial">DISCOVER THE PLATFORM &rarr;</a>
+                </div>
+            </div>
+            
+            <div class="row mt-5">
+                <div class="col-12">
+                    <!-- Asymmetric Visual: Large Editorial Voting Concept Vector -->
+                    <div class="p-5 text-center bg-body-secondary rounded-1" style="min-height: 350px; display: flex; align-items: center; justify-content: center;">
+                        <svg viewBox="0 0 600 200" width="100%" height="auto" style="max-width: 550px;">
+                            <rect x="50" y="40" width="500" height="120" rx="8" fill="none" stroke="currentColor" stroke-dasharray="10 5" opacity="0.3" />
+                            <circle cx="150" cy="100" r="25" fill="var(--accent-saffron)" opacity="0.15" />
+                            <circle cx="150" cy="100" r="10" fill="var(--accent-saffron)" />
+                            <line x1="160" y1="100" x2="275" y2="100" stroke="currentColor" stroke-width="2" stroke-dasharray="5 5" opacity="0.4" />
+                            
+                            <rect x="275" y="70" width="50" height="60" rx="4" fill="none" stroke="currentColor" stroke-width="3" />
+                            <line x1="290" y1="90" x2="310" y2="110" stroke="var(--accent-green)" stroke-width="4" stroke-linecap="round" />
+                            <line x1="310" y1="90" x2="290" y2="110" stroke="var(--accent-green)" stroke-width="4" stroke-linecap="round" />
+                            
+                            <line x1="325" y1="100" x2="450" y2="100" stroke="currentColor" stroke-width="2" stroke-dasharray="5 5" opacity="0.4" />
+                            <circle cx="450" cy="100" r="25" fill="var(--accent-green)" opacity="0.15" />
+                            <circle cx="450" cy="100" r="10" fill="var(--accent-green)" />
+                            
+                            <text x="150" y="150" text-anchor="middle" font-family="Outfit" font-size="11" font-weight="700" fill="currentColor">VOTER IDENTITY</text>
+                            <text x="300" y="150" text-anchor="middle" font-family="Outfit" font-size="11" font-weight="700" fill="currentColor">VERIFICATION</text>
+                            <text x="450" y="150" text-anchor="middle" font-family="Outfit" font-size="11" font-weight="700" fill="currentColor">SECURE VOTE</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. WHAT WE DO -->
+    <section id="what-we-do" class="section-padding">
+        <div class="container">
+            <div class="row align-items-end mb-5">
+                <div class="col-lg-6">
+                    <span class="eyebrow">What We Do</span>
+                    <h2 class="display-6 fw-bold">Everything you need to participate <span class="serif-text">with confidence.</span></h2>
+                </div>
+                <div class="col-lg-6">
+                    <p class="text-secondary mb-0">Our platform bridges the gap between digital convenience and democratic reliability. Explore the three main features built natively inside the system.</p>
+                </div>
+            </div>
+            
+            <div class="row mt-5">
+                <div class="col-12">
+                    <!-- Feature Block 1 -->
+                    <div class="editorial-block row align-items-center g-4">
+                        <div class="col-md-1 block-num">01</div>
+                        <div class="col-md-4">
+                            <h3 class="h4">Secure Voter Registration</h3>
+                            <p class="text-muted mb-0">Register your voter profile and verify your account instantly through safe email OTP codes before casting a ballot.</p>
+                        </div>
+                        <div class="col-md-4 offset-md-3">
+                            <div class="block-visual">
+                                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--accent-saffron)" stroke-width="1.5">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path d="M22 11l-3 3-2-2" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Feature Block 2 -->
+                    <div class="editorial-block row align-items-center g-4">
+                        <div class="col-md-1 block-num">02</div>
+                        <div class="col-md-4">
+                            <h3 class="h4">Digital Election Participation</h3>
+                            <p class="text-muted mb-0">Browse configured active elections, inspect candidate manifests, and securely submit your digital vote from your dashboard.</p>
+                        </div>
+                        <div class="col-md-4 offset-md-3">
+                            <div class="block-visual">
+                                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="1.5">
+                                    <path d="M9 12l2 2 4-4" />
+                                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Feature Block 3 -->
+                    <div class="editorial-block row align-items-center g-4">
+                        <div class="col-md-1 block-num">03</div>
+                        <div class="col-md-4">
+                            <h3 class="h4">AI-Powered Election Assistance</h3>
+                            <p class="text-muted mb-0">Ask questions to our AI assistant to understand platform procedures, rules, and candidate manifestos neutrally.</p>
+                        </div>
+                        <div class="col-md-4 offset-md-3">
+                            <div class="block-visual">
+                                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                                    <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                                    <line x1="12" y1="22.08" x2="12" y2="12" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. HOW DIGITAL VOTING WORKS -->
+    <section id="how-it-works" class="section-padding bg-body-secondary">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-6">
+                    <span class="eyebrow">The Process</span>
+                    <h2 class="display-6 fw-bold">From registration <span class="serif-text">to participation.</span></h2>
+                </div>
+            </div>
+            
+            <div class="row g-4 mt-4">
+                <div class="col-md-4">
+                    <div class="process-row">
+                        <div class="process-dot"></div>
+                        <span class="text-muted small fw-bold">01</span>
+                        <h4 class="h5 mt-2">Create Account</h4>
+                        <p class="text-secondary small">Provide full registration details including your official Voter ID and details.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="process-row">
+                        <div class="process-dot"></div>
+                        <span class="text-muted small fw-bold">02</span>
+                        <h4 class="h5 mt-2">Verify Email</h4>
+                        <p class="text-secondary small">Retrieve the secure 6-digit activation OTP from your email to verify your profile.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="process-row">
+                        <div class="process-dot"></div>
+                        <span class="text-muted small fw-bold">03</span>
+                        <h4 class="h5 mt-2">Explore Active Election</h4>
+                        <p class="text-secondary small">Log in securely via Spring Security to view currently active election lists.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="process-row">
+                        <div class="process-dot"></div>
+                        <span class="text-muted small fw-bold">04</span>
+                        <h4 class="h5 mt-2">Review Candidates</h4>
+                        <p class="text-secondary small">Read neutrality-guided candidate manifesto summaries generated by AI.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="process-row">
+                        <div class="process-dot"></div>
+                        <span class="text-muted small fw-bold">05</span>
+                        <h4 class="h5 mt-2">Cast Your Vote</h4>
+                        <p class="text-secondary small">Confirm candidate details and record your single vote securely in the database.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="process-row">
+                        <div class="process-dot"></div>
+                        <span class="text-muted small fw-bold">06</span>
+                        <h4 class="h5 mt-2">View Available Results</h4>
+                        <p class="text-secondary small">Access closed election statistics and metrics from your dashboard.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. AI-POWERED VOTER ASSISTANCE -->
+    <section id="ai-assistance" class="section-padding">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <div class="ai-illustration-box">
+                        <svg viewBox="0 0 300 300" width="100%" height="auto" style="max-width: 320px;">
+                            <circle cx="150" cy="150" r="120" fill="none" stroke="var(--border-color)" stroke-width="2" />
+                            <circle cx="150" cy="150" r="70" fill="none" stroke="var(--border-color)" stroke-width="1" />
+                            <!-- Central Node -->
+                            <circle cx="150" cy="150" r="20" fill="var(--text-primary)" />
+                            <text x="150" y="154" fill="var(--bg-primary)" font-family="Outfit" font-size="12" font-weight="700" text-anchor="middle">AI</text>
+                            
+                            <!-- Connected Nodes -->
+                            <line x1="150" y1="150" x2="80" y2="100" stroke="var(--text-primary)" stroke-width="1.5" stroke-dasharray="4 2" />
+                            <line x1="150" y1="150" x2="220" y2="100" stroke="var(--text-primary)" stroke-width="1.5" stroke-dasharray="4 2" />
+                            <line x1="150" y1="150" x2="150" y2="230" stroke="var(--text-primary)" stroke-width="1.5" stroke-dasharray="4 2" />
+                            
+                            <circle cx="80" cy="100" r="8" fill="var(--accent-saffron)" />
+                            <circle cx="220" cy="100" r="8" fill="var(--accent-green)" />
+                            <circle cx="150" cy="230" r="8" fill="var(--text-secondary)" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <span class="eyebrow">AI-POWERED ASSISTANCE</span>
+                    <h2 class="display-6 fw-bold mb-4">Election information,<br><span class="serif-text">made easier to understand.</span></h2>
+                    <p class="text-secondary mb-4">Our portal uses Google Gemini AI integration to generate objective information summaries. The AI acts as an informational assistant to provide clarity on rules, manifestos, and operations without recommending candidates.</p>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <h5 class="h6 mb-2">🛡️ Portal Guidance</h5>
+                            <p class="small text-muted mb-0">Learn voting guidelines and dashboard navigation metrics.</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <h5 class="h6 mb-2">📂 Candidate Summaries</h5>
+                            <p class="small text-muted mb-0">Neutrally review policy promises in regional Indian languages.</p>
+                        </div>
+                    </div>
+                    
+                    <a th:href="@{/login}" class="btn-editorial-primary text-decoration-none">EXPLORE AI ASSISTANT &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. VOTING RULES / TRUST & SECURITY (Dark Charcoal Background) -->
+    <section id="rules" class="section-padding dark-editorial-section">
+        <div class="container">
+            <div class="row align-items-center mb-5">
+                <div class="col-lg-7">
+                    <span class="eyebrow" style="color: var(--accent-saffron);">TRUST & SECURITY</span>
+                    <h2 class="display-5 fw-bold mb-3">Participation built around trust.</h2>
+                    <p class="lead-text">Technical rules and structures implemented inside this prototype application to ensure compliance and role security.</p>
+                </div>
+            </div>
+            
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="rule-row row align-items-center">
+                        <div class="col-md-2 rule-num">01 — VERIFIED ACCESS</div>
+                        <div class="col-md-10 text-white-50">OTP-based email verification confirms registered voter accounts during profile sign-up.</div>
+                    </div>
+                    <div class="rule-row row align-items-center">
+                        <div class="col-md-2 rule-num">02 — ONE VOTE PER ELECTION</div>
+                        <div class="col-md-10 text-white-50">Database validation checks ensure duplicate voting records cannot be created for the same user.</div>
+                    </div>
+                    <div class="rule-row row align-items-center">
+                        <div class="col-md-2 rule-num">03 — ROLE-BASED ACCESS</div>
+                        <div class="col-md-10 text-white-50">Voters and administrators are directed to distinct routing paths controlled by Spring Security.</div>
+                    </div>
+                    <div class="rule-row row align-items-center">
+                        <div class="col-md-2 rule-num">04 — SECURE DATA FLOW</div>
+                        <div class="col-md-10 text-white-50">Secure document model mapping stores user profiles and cast logs reliably inside MongoDB Atlas.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 8. TESTIMONIALS (Prototype / Demo Feedback) -->
+    <section id="testimonials" class="section-padding">
+        <div class="container">
+            <div class="row mb-5 text-center">
+                <div class="col-lg-8 mx-auto">
+                    <span class="eyebrow">FEEDBACK</span>
+                    <h2 class="display-6 fw-bold">Designed around a clearer <span class="serif-text">voter experience.</span></h2>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-lg-10 mx-auto">
+                    <div class="testimonial-slider text-center">
+                        <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <p class="testimonial-quote">"The registration and OTP flow makes account verification simple to understand."</p>
+                                    <span class="fw-bold text-uppercase small letter-spacing-1">Prototype Voter</span>
+                                </div>
+                                <div class="carousel-item">
+                                    <p class="testimonial-quote">"The election workflow clearly guides the voter from candidate review to vote submission."</p>
+                                    <span class="fw-bold text-uppercase small letter-spacing-1">Demo User</span>
+                                </div>
+                                <div class="carousel-item">
+                                    <p class="testimonial-quote">"The AI assistant makes portal navigation and election information easier to explore."</p>
+                                    <span class="fw-bold text-uppercase small letter-spacing-1">Student Reviewer</span>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-center gap-3 mt-4">
+                                <button class="btn btn-outline-dark btn-sm rounded-circle py-2 px-3" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev" aria-label="Previous testimonial">
+                                    &larr;
+                                </button>
+                                <button class="btn btn-outline-dark btn-sm rounded-circle py-2 px-3" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next" aria-label="Next testimonial">
+                                    &rarr;
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 9. LARGE CALL TO ACTION -->
+    <section class="cta-editorial">
+        <div class="container py-5 text-center">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <h2 class="display-4 fw-bold text-white mb-4">Ready to make your voice count?</h2>
+                    <p class="lead text-white-50 mb-5 max-w-lg mx-auto">Create your account, verify your identity and explore the digital voting experience.</p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a th:href="@{/register}" class="btn-editorial-primary text-decoration-none py-3 px-4">REGISTER TO VOTE &rarr;</a>
+                        <a th:href="@{/login}" class="btn btn-outline-light rounded-1 py-3 px-4 fw-semibold">LOGIN</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 10. PREMIUM FOOTER -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

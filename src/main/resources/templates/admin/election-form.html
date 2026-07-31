@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script>(function(){const saved=localStorage.getItem('theme');const theme=saved?saved:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-bs-theme',theme);})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Election | VOTE INDIA</title>
+    <!-- Bootstrap & Custom Design stylesheets -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link th:href="@{/css/design-system.css}" rel="stylesheet">
+    <link th:href="@{/css/app-shell.css}" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="app-sidebar">
+            <div class="sidebar-brand">
+                <span class="title">VOTE INDIA</span>
+                <div class="subtitle">Administration</div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a th:href="@{/admin/dashboard}" class="sidebar-link">Dashboard</a></li>
+                <li><a th:href="@{/admin/candidates}" class="sidebar-link">Candidates</a></li>
+                <li><a th:href="@{/admin/elections}" class="sidebar-link active">Elections</a></li>
+                <li><a th:href="@{/admin/users}" class="sidebar-link">Users / Voters</a></li>
+                <li><a th:href="@{/admin/statistics}" class="sidebar-link">Statistics</a></li>
+            </ul>
+            <div class="mt-auto pt-3 border-top" style="border-color: rgba(255,255,255,0.08) !important;">
+                <form th:action="@{/logout}" method="post" class="m-0">
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100 rounded-1">Logout</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="app-content">
+            <header class="app-header">
+                <button class="btn btn-dark d-lg-none" id="sidebarToggle">☰ Menu</button>
+                <span class="header-welcome">Create Election</span>
+            </header>
+
+            <main class="app-body">
+                <div class="mb-4">
+                    <a th:href="@{/admin/elections}" class="btn-editorial-secondary mb-3 py-2 px-3">&larr; Back to Elections</a>
+                    <h2 class="display-6 m-0">Create New Election</h2>
+                    <p class="text-secondary mb-0">Fill in the details to schedule a new national voting event.</p>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card p-4">
+                            <!-- Error Messages -->
+                            <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+                            <form th:action="@{/admin/elections}" th:object="${election}" method="post">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small text-uppercase tracking-wider">Election Title</label>
+                                    <input type="text" class="form-control" th:field="*{title}" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small text-uppercase tracking-wider">Description</label>
+                                    <textarea class="form-control" th:field="*{description}" rows="4" placeholder="Briefly describe the purpose of the election..."></textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-semibold small text-uppercase tracking-wider">Start Date & Time</label>
+                                        <input type="datetime-local" class="form-control" th:field="*{startDate}" required>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <label class="form-label fw-semibold small text-uppercase tracking-wider">End Date & Time</label>
+                                        <input type="datetime-local" class="form-control" th:field="*{endDate}" required>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold small text-uppercase tracking-wider">Select Candidates</label>
+                                    <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto; background-color: var(--bg-secondary); border-color: var(--border-color) !important;">
+                                        <div th:each="candidate : ${candidates}" class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   th:field="*{candidateIds}" 
+                                                   th:value="${candidate.id}" 
+                                                   th:id="${'candidate_' + candidate.id}">
+                                            <label class="form-check-label" th:for="${'candidate_' + candidate.id}">
+                                                <strong th:text="${candidate.name}"></strong> 
+                                                <span class="text-secondary" th:text="${' (' + candidate.party + ')'}"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn-editorial-primary px-5 py-3">Create Election &rarr;</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Hidden Footer reference to load theme styles globally -->
+    <div th:replace="~{fragments/footer :: footer}" style="display: none;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app-ui.js}"></script>
+</body>
+</html>

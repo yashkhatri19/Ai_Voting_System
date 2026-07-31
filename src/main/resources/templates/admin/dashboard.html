@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script>(function(){const saved=localStorage.getItem('theme');const theme=saved?saved:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-bs-theme',theme);})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | VOTE INDIA</title>
+    <!-- Bootstrap & Custom Design stylesheets -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link th:href="@{/css/design-system.css}" rel="stylesheet">
+    <link th:href="@{/css/app-shell.css}" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="app-sidebar">
+            <div class="sidebar-brand">
+                <span class="title">VOTE INDIA</span>
+                <div class="subtitle">Administration</div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a th:href="@{/admin/dashboard}" class="sidebar-link active">Dashboard</a></li>
+                <li><a th:href="@{/admin/candidates}" class="sidebar-link">Candidates</a></li>
+                <li><a th:href="@{/admin/elections}" class="sidebar-link">Elections</a></li>
+                <li><a th:href="@{/admin/users}" class="sidebar-link">Users / Voters</a></li>
+                <li><a th:href="@{/admin/statistics}" class="sidebar-link">Statistics</a></li>
+            </ul>
+            <div class="mt-auto pt-3 border-top" style="border-color: rgba(255,255,255,0.08) !important;">
+                <form th:action="@{/logout}" method="post" class="m-0">
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100 rounded-1">Logout</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="app-content">
+            <header class="app-header">
+                <button class="btn btn-dark d-lg-none" id="sidebarToggle">☰ Menu</button>
+                <span class="header-welcome" th:text="${'Welcome, ' + user.fullName}"></span>
+            </header>
+
+            <main class="app-body">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <div>
+                        <h2 class="display-6 m-0">Welcome, Administrator</h2>
+                        <p class="text-secondary mb-0">Overview of the national digital voting platform.</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Stats Blocks -->
+                    <div class="col-lg-8">
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card p-3 text-center shadow-none">
+                                    <span class="stat-label">Total Users</span>
+                                    <div class="stat-val mt-2" th:text="${totalUsers}">4</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card p-3 text-center shadow-none">
+                                    <span class="stat-label">Total Voters</span>
+                                    <div class="stat-val mt-2" th:text="${totalVoters}">3</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card p-3 text-center shadow-none">
+                                    <span class="stat-label">Candidates</span>
+                                    <div class="stat-val mt-2" th:text="${totalCandidates}">1</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="card p-3 text-center shadow-none">
+                                    <span class="stat-label">Votes Cast</span>
+                                    <div class="stat-val mt-2" th:text="${totalVotes}">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Election Control Panel -->
+                        <div class="card mb-4">
+                            <div class="card-header">Election Control Status</div>
+                            <div class="card-body">
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex justify-content-between py-2 border-bottom" style="border-color: var(--border) !important;">
+                                        <span class="text-secondary fw-semibold">Active Status:</span>
+                                        <span class="fw-bold" th:text="${electionStatus}">No active election</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-2 border-bottom" style="border-color: var(--border) !important;">
+                                        <span class="text-secondary fw-semibold">Remaining Voters:</span>
+                                        <span class="fw-bold" th:text="${remainingVoters}">3</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between py-2">
+                                        <span class="text-secondary fw-semibold">Winner Summary:</span>
+                                        <span class="fw-bold text-end" th:text="${winnerMessage}">N/A (No votes cast or no active election)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action center links -->
+                        <div class="card">
+                            <div class="card-header">Quick Action Index</div>
+                            <div class="list-group list-group-flush list-group-editorial">
+                                <a th:href="@{/admin/candidates}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                                    <span>01 Candidates Management</span>
+                                    <span>&rarr;</span>
+                                </a>
+                                <a th:href="@{/admin/elections}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                                    <span>02 Elections Management</span>
+                                    <span>&rarr;</span>
+                                </a>
+                                <a th:href="@{/admin/users}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                                    <span>03 Users / Voters Directory</span>
+                                    <span>&rarr;</span>
+                                </a>
+                                <a th:href="@{/admin/statistics}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                                    <span>04 Election Statistics (Charts)</span>
+                                    <span>&rarr;</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Profile Sidebar -->
+                    <div class="col-lg-4">
+                        <div class="card p-3 text-center">
+                            <div class="card-header border-0 bg-transparent pb-0">System Admin Profile</div>
+                            <div class="card-body">
+                                <img th:src="${user.profileImage != null && !user.profileImage.isEmpty() ? user.profileImage : 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + user.fullName}" 
+                                     alt="Profile Photo" 
+                                     class="rounded-circle img-thumbnail bg-transparent mb-3" 
+                                     style="width: 80px; height: 80px; object-fit: cover; border-color: var(--border);">
+                                
+                                <h4 class="h5 mb-1" th:text="${user.fullName}"></h4>
+                                <p class="small text-muted mb-3" th:text="${user.email}"></p>
+                                
+                                <div class="d-flex flex-column gap-2 text-start pt-3 border-top" style="border-color: var(--border) !important;">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-secondary small fw-bold">Role:</span>
+                                        <span class="badge-editorial badge-editorial-saffron" th:text="${user.role}">ADMIN</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-secondary small fw-bold">Mobile:</span>
+                                        <span class="fw-bold" th:text="${user.mobile}"></span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-secondary small fw-bold">Status:</span>
+                                        <span class="badge-editorial badge-editorial-green" th:text="${user.status}">ACTIVE</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Hidden Footer reference to load theme styles globally -->
+    <div th:replace="~{fragments/footer :: footer}" style="display: none;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app-ui.js}"></script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+/* design-system.css - Global Styles & UI Overrides */
+:root, [data-bs-theme="light"] {
+    --page-bg: #fbfaf7;
+    --surface: #ffffff;
+    --surface-soft: #f4f2ea;
+    --text-primary: #1c1d21;
+    --text-secondary: #5e6066;
+    --text-muted: #8e9096;
+    --border: rgba(28, 29, 33, 0.08);
+    --border-strong: rgba(28, 29, 33, 0.18);
+    --brand-saffron: #d97706;
+    --brand-green: #15803d;
+    --brand-ink: #121316;
+    --brand-ivory: #fbfaf7;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.02);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.06);
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    
+    --font-headings: 'Outfit', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-editorial: 'Playfair Display', serif;
+}
+
+[data-bs-theme="dark"] {
+    --page-bg: #121316;
+    --surface: #1e2025;
+    --surface-soft: #18191d;
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --border: rgba(243, 244, 246, 0.08);
+    --border-strong: rgba(243, 244, 246, 0.18);
+    --brand-saffron: #f59e0b;
+    --brand-green: #22c55e;
+    --brand-ink: #121316;
+    --brand-ivory: #f3f4f6;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.25);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* Force body styling overrides */
+body {
+    background-color: var(--page-bg) !important;
+    color: var(--text-primary) !important;
+    font-family: var(--font-body);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary) !important;
+    font-family: var(--font-headings);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.serif-text {
+    font-family: var(--font-editorial);
+    font-style: italic;
+    font-weight: 400;
+}
+
+/* UI Overrides for Default Bootstrap Elements */
+.card {
+    background-color: var(--surface) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-sm) !important;
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.card-header {
+    background-color: var(--surface-soft) !important;
+    border-bottom: 1px solid var(--border) !important;
+    color: var(--text-primary) !important;
+    font-family: var(--font-headings);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.08em;
+}
+
+.list-group-item {
+    background-color: transparent !important;
+    border-color: var(--border) !important;
+    color: var(--text-primary) !important;
+}
+
+.alert {
+    border-radius: var(--radius-sm) !important;
+    border: none !important;
+    font-weight: 600;
+}
+.alert-success {
+    background-color: rgba(22, 163, 74, 0.1) !important;
+    color: var(--brand-green) !important;
+}
+.alert-danger {
+    background-color: rgba(220, 38, 38, 0.1) !important;
+    color: var(--danger) !important;
+}
+.alert-warning {
+    background-color: rgba(217, 119, 6, 0.1) !important;
+    color: var(--brand-saffron) !important;
+}
+
+/* Tables */
+.table {
+    color: var(--text-primary) !important;
+    border-color: var(--border) !important;
+}
+.table th, .table td {
+    background-color: transparent !important;
+    color: var(--text-primary) !important;
+}
+.thead-editorial th, .table-dark th {
+    background-color: var(--surface-soft) !important;
+    color: var(--text-primary) !important;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    font-family: var(--font-headings);
+    border-bottom: 2px solid var(--border-strong) !important;
+}
+
+/* Buttons */
+.btn-editorial-primary {
+    background-color: var(--text-primary) !important;
+    color: var(--page-bg) !important;
+    border: 1px solid var(--text-primary) !important;
+    font-weight: 600;
+    border-radius: var(--radius-sm) !important;
+    padding: 0.7rem 1.8rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+.btn-editorial-primary:hover {
+    background-color: var(--brand-saffron) !important;
+    border-color: var(--brand-saffron) !important;
+    color: #ffffff !important;
+    transform: translateY(-1px);
+}
+
+.btn-editorial-secondary {
+    background-color: transparent !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
+    font-weight: 600;
+    border-radius: var(--radius-sm) !important;
+    padding: 0.7rem 1.8rem;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-decoration: none;
+}
+.btn-editorial-secondary:hover {
+    border-color: var(--text-primary) !important;
+    background-color: rgba(28, 29, 33, 0.03) !important;
+    transform: translateY(-1px);
+}
+[data-bs-theme="dark"] .btn-editorial-secondary:hover {
+    background-color: rgba(243, 244, 246, 0.03) !important;
+}
+
+/* Editorial Badge Styles */
+.badge-editorial {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    padding: 0.35rem 0.7rem;
+    border-radius: var(--radius-sm);
+    display: inline-block;
+}
+.badge-editorial-saffron {
+    background-color: rgba(217, 119, 6, 0.1);
+    color: var(--brand-saffron);
+}
+.badge-editorial-green {
+    background-color: rgba(21, 128, 61, 0.1);
+    color: var(--brand-green);
+}
+.badge-editorial-danger {
+    background-color: rgba(220, 38, 38, 0.1);
+    color: var(--danger);
+}
+.badge-editorial-muted {
+    background-color: var(--surface-soft);
+    color: var(--text-secondary);
+}
+
+/* Form Controls */
+.form-control, .form-select {
+    background-color: var(--surface) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-sm) !important;
+    padding: 0.75rem 1rem !important;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--text-primary) !important;
+    box-shadow: 0 0 0 3px rgba(28, 29, 33, 0.08) !important;
+    outline: none !important;
+}
+[data-bs-theme="dark"] .form-control:focus, [data-bs-theme="dark"] .form-select:focus {
+    box-shadow: 0 0 0 3px rgba(243, 244, 246, 0.08) !important;
+}

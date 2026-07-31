@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script>(function(){const saved=localStorage.getItem('theme');const theme=saved?saved:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-bs-theme',theme);})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candidate Details | VOTE INDIA</title>
+    <!-- Bootstrap & Custom Design stylesheets -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    
+    <link th:href="@{/css/design-system.css}" rel="stylesheet">
+    <link th:href="@{/css/app-shell.css}" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="app-sidebar">
+            <div class="sidebar-brand">
+                <span class="title">VOTE INDIA</span>
+                <div class="subtitle">Voter Portal</div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a th:href="@{/voter/dashboard}" class="sidebar-link">Dashboard</a></li>
+                <li><a th:href="@{/voter/candidates}" class="sidebar-link active">Candidates Directory</a></li>
+                <li><a th:href="@{/voter/ai-assistant}" class="sidebar-link">AI Assistant</a></li>
+                <li><a th:href="@{/voter/results}" class="sidebar-link">Election Results</a></li>
+                <li><a th:href="@{/voter/profile}" class="sidebar-link">My Profile</a></li>
+            </ul>
+            <div class="mt-auto pt-3 border-top" style="border-color: rgba(255,255,255,0.08) !important;">
+                <form th:action="@{/logout}" method="post" class="m-0">
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100 rounded-1">Logout</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="app-content">
+            <header class="app-header">
+                <button class="btn btn-dark d-lg-none" id="sidebarToggle">☰ Menu</button>
+                <span class="header-welcome">Candidate Profile</span>
+            </header>
+
+            <main class="app-body">
+                <div class="mb-4">
+                    <a th:href="@{/voter/candidates}" class="btn-editorial-secondary mb-3 py-2 px-3">&larr; Back to Candidates</a>
+                    <h2 class="display-6 m-0" th:text="${candidate.name}"></h2>
+                    <p class="text-secondary mb-0">Official profile and campaign manifestos.</p>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Profile Card -->
+                    <div class="col-lg-4">
+                        <div class="card p-4 text-center">
+                             <!-- Placeholder Initials or symbol -->
+                             <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px; border: 1px solid var(--border);">
+                                 <img th:if="${candidate.symbol != null && candidate.symbol.startsWith('data:image')}" th:src="${candidate.symbol}" alt="Symbol" style="width: 60px; height: 60px; object-fit: contain;">
+                                 <span th:if="${candidate.symbol != null && !candidate.symbol.startsWith('data:image')}" th:text="${candidate.symbol}" class="fs-4 fw-bold text-muted text-uppercase"></span>
+                                 <span th:if="${candidate.symbol == null}" class="fs-1 fw-bold text-muted" th:text="${candidate.name.substring(0, 1)}">C</span>
+                             </div>
+                            
+                            <h3 class="h5 mb-1" th:text="${candidate.name}"></h3>
+                            <span class="badge-editorial badge-editorial-saffron mb-3 d-inline-block mx-auto" th:text="${candidate.party}">Party</span>
+                            
+                            <div class="border-top pt-3 text-start small d-flex flex-column gap-2" style="border-color: var(--border) !important;">
+                                <div class="d-flex justify-content-between">
+                                    <span class="text-secondary fw-semibold">Party Affiliation:</span>
+                                    <span class="fw-bold" th:text="${candidate.party}"></span>
+                                </div>
+                                <div class="d-flex justify-content-between" th:if="${candidate.symbol != null && !candidate.symbol.startsWith('data:image')}">
+                                    <span class="text-secondary fw-semibold">Symbol Text:</span>
+                                    <span class="fw-bold" th:text="${candidate.symbol}"></span>
+                                </div>
+                                <div th:if="${candidate.symbol != null && candidate.symbol.startsWith('data:image')}" class="mt-2 text-center border-top pt-2">
+                                    <span class="text-secondary fw-semibold d-block mb-1">Official Symbol Graphic:</span>
+                                    <img th:src="${candidate.symbol}" alt="Symbol" style="width: 60px; height: 60px; object-fit: contain;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details Box -->
+                    <div class="col-lg-8">
+                        <!-- Manifesto -->
+                        <div class="card p-4 mb-4">
+                            <div class="card-header border-0 bg-transparent ps-0 pt-0">Manifesto Stated Goals</div>
+                            <p class="lead-text fs-6 serif-text p-3 rounded bg-body-secondary mt-2" style="white-space: pre-line;" th:text="${candidate.manifesto}"></p>
+                        </div>
+
+                        <!-- AI Summaries -->
+                        <div class="card p-4">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                                <div class="card-header border-0 bg-transparent ps-0 pt-0">AI MANIFESTO SUMMARY</div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <label for="langSelect" class="small text-muted mb-0">Select Language:</label>
+                                    <select id="langSelect" class="form-select form-select-sm py-1 px-2" style="width: auto;" onchange="location = this.value;">
+                                        <option th:value="@{'/voter/candidates/' + ${candidate.id}(lang='en')}" th:selected="${currentLang == 'en'}">English</option>
+                                        <option th:value="@{'/voter/candidates/' + ${candidate.id}(lang='hi')}" th:selected="${currentLang == 'hi'}">हिन्दी (Hindi)</option>
+                                        <option th:value="@{'/voter/candidates/' + ${candidate.id}(lang='bn')}" th:selected="${currentLang == 'bn'}">বাংলা (Bengali)</option>
+                                        <option th:value="@{'/voter/candidates/' + ${candidate.id}(lang='te')}" th:selected="${currentLang == 'te'}">తెలుగు (Telugu)</option>
+                                        <option th:value="@{'/voter/candidates/' + ${candidate.id}(lang='ta')}" th:selected="${currentLang == 'ta'}">தமிழ் (Tamil)</option>
+                                        <option th:value="@{'/voter/candidates/' + ${candidate.id}(lang='mr')}" th:selected="${currentLang == 'mr'}">मराठी (Marathi)</option>
+                                        <option th:value="@{'/voter/candidates/' + ${candidate.id}(lang='gu')}" th:selected="${currentLang == 'gu'}">ગુજરાતી (Gujarati)</option>
+                                        <option th:value="@{'/voter/candidates/' + ${candidate.id}(lang='kn')}" th:selected="${currentLang == 'kn'}">ಕನ್ನಡ (Kannada)</option>
+                                        <option th:value="@{'/voter/candidates/' + ${candidate.id}(lang='ml')}" th:selected="${currentLang == 'ml'}">മലയാളം (Malayalam)</option>
+                                        <option th:value="@{'/voter/candidates/' + ${candidate.id}(lang='pa')}" th:selected="${currentLang == 'pa'}">ਪੰਜਾਬੀ (Punjabi)</option>
+                                        <option th:value="@{'/voter/candidates/' + ${candidate.id}(lang='or')}" th:selected="${currentLang == 'or'}">ଓଡ଼ିଆ (Odia)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div id="manifestoSummary" class="p-3 border border-warning rounded mt-2" style="border-color: var(--brand-saffron) !important;" th:text="${summary}"></div>
+                            
+                            <span class="small text-muted border-top pt-3 mt-2" style="display: block; border-color: var(--border) !important;">
+                                ⚠️ AI-generated summaries are informational and may simplify the original manifesto. Review available candidate information before making a decision.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Hidden Footer reference to load theme styles globally -->
+    <div th:replace="~{fragments/footer :: footer}" style="display: none;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+    <script th:src="@{/js/app-ui.js}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const summaryEl = document.getElementById("manifestoSummary");
+            if (summaryEl) {
+                const rawMarkdown = summaryEl.textContent;
+                const htmlContent = marked.parse(rawMarkdown);
+                const cleanHtml = DOMPurify.sanitize(htmlContent);
+                summaryEl.innerHTML = cleanHtml;
+            }
+        });
+    </script>
+</body>
+</html>

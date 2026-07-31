@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script>(function(){const saved=localStorage.getItem('theme');const theme=saved?saved:(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-bs-theme',theme);})();</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voter Dashboard | VOTE INDIA</title>
+    <!-- Bootstrap & Custom Design stylesheets -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link th:href="@{/css/design-system.css}" rel="stylesheet">
+    <link th:href="@{/css/app-shell.css}" rel="stylesheet">
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="app-sidebar">
+            <div class="sidebar-brand">
+                <span class="title">VOTE INDIA</span>
+                <div class="subtitle">Voter Portal</div>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a th:href="@{/voter/dashboard}" class="sidebar-link active">Dashboard</a></li>
+                <li><a th:href="@{/voter/candidates}" class="sidebar-link">Candidates Directory</a></li>
+                <li><a th:href="@{/voter/ai-assistant}" class="sidebar-link">AI Assistant</a></li>
+                <li><a th:href="@{/voter/results}" class="sidebar-link">Election Results</a></li>
+                <li><a th:href="@{/voter/profile}" class="sidebar-link">My Profile</a></li>
+            </ul>
+            <div class="mt-auto pt-3 border-top" style="border-color: rgba(255,255,255,0.08) !important;">
+                <form th:action="@{/logout}" method="post" class="m-0">
+                    <button type="submit" class="btn btn-outline-light btn-sm w-100 rounded-1">Logout</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="app-content">
+            <header class="app-header">
+                <button class="btn btn-dark d-lg-none" id="sidebarToggle">☰ Menu</button>
+                <span class="header-welcome" th:text="${'Welcome, ' + user.fullName}"></span>
+            </header>
+
+            <main class="app-body">
+                <div class="mb-4">
+                    <h2 class="display-6 m-0">VOTER PORTAL</h2>
+                    <p class="text-secondary mb-0">Your secure digital voting workspace.</p>
+                </div>
+
+                <div class="row">
+                    <!-- Left Side: Profile -->
+                    <div class="col-lg-4 mb-4">
+                        <div class="card p-3 text-center">
+                            <div class="card-header border-0 bg-transparent pb-0">Voter Profile</div>
+                            <div class="card-body">
+                                <img th:src="${user.profileImage != null && !user.profileImage.isEmpty() ? user.profileImage : 'https://api.dicebear.com/7.x/adventurer/svg?seed=' + user.fullName}" 
+                                     alt="Profile Photo" 
+                                     class="rounded-circle img-thumbnail bg-transparent mb-3" 
+                                     style="width: 80px; height: 80px; object-fit: cover; border-color: var(--border);">
+                                
+                                <h4 class="h5 mb-1" th:text="${user.fullName}"></h4>
+                                <p class="small text-muted mb-3" th:text="${user.email}"></p>
+                                
+                                <div class="d-flex flex-column gap-2 text-start pt-3 border-top" style="border-color: var(--border) !important;">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-secondary small fw-bold">Voter ID:</span>
+                                        <span class="fw-bold" th:text="${user.voterId}"></span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-secondary small fw-bold">Mobile:</span>
+                                        <span class="fw-bold" th:text="${user.mobile}"></span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-secondary small fw-bold">Date of Birth:</span>
+                                        <span class="fw-bold" th:text="${user.dateOfBirth}"></span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-secondary small fw-bold">Status:</span>
+                                        <span class="badge-editorial badge-editorial-green" th:text="${user.status}">ACTIVE</span>
+                                    </div>
+                                </div>
+                                <a th:href="@{/voter/profile}" class="btn-editorial-secondary btn-sm w-100 mt-4 fw-bold">Manage Profile & Password</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Side: Active Elections and Links -->
+                    <div class="col-lg-8">
+                        <!-- Active Election Details Card -->
+                        <div th:if="${activeElection != null}" class="card mb-4" style="border-left: 4px solid var(--brand-saffron) !important;">
+                            <div class="card-header border-0 bg-transparent text-uppercase tracking-wider fw-bold text-warning-emphasis pb-0">Active Election Status</div>
+                            <div class="card-body">
+                                <h4 class="h5 mb-2" th:text="${activeElection.title}"></h4>
+                                <p class="text-secondary small mb-4" th:text="${activeElection.description}"></p>
+                                
+                                <div th:if="${hasVoted}" class="alert alert-success d-inline-block py-2 px-3 m-0">
+                                    ✓ You have successfully voted in this election.
+                                </div>
+                                <div th:unless="${hasVoted}">
+                                    <a th:href="@{/voter/vote}" class="btn-editorial-primary">Cast Your Vote Now &rarr;</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- No Active Election Alert -->
+                        <div th:unless="${activeElection != null}" class="alert alert-warning py-3 mb-4">
+                            There are no active elections currently. Please wait for an administrator to activate an election.
+                        </div>
+
+                        <!-- Quick Navigation card -->
+                        <div class="card">
+                            <div class="card-header">Workspace Quick Directory</div>
+                            <div class="list-group list-group-flush list-group-editorial">
+                                <a th:href="@{/voter/candidates}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                                    <span>01 Candidates & manifesto summaries</span>
+                                    <span>&rarr;</span>
+                                </a>
+                                <a th:href="@{/voter/ai-assistant}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                                    <span>02 Ask AI Voting Assistant</span>
+                                    <span>&rarr;</span>
+                                </a>
+                                <a th:href="@{/voter/results}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center py-3">
+                                    <span>03 View Closed Election Results</span>
+                                    <span>&rarr;</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Hidden Footer reference to load theme styles globally -->
+    <div th:replace="~{fragments/footer :: footer}" style="display: none;"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/app-ui.js}"></script>
+</body>
+</html>

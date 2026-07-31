@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: voting_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: voting_app
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - MONGODB_URI=mongodb://mongodb:27017/votingdb
+      - MAIL_USERNAME=${MAIL_USERNAME:-chhavisharma0707@gmail.com}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-vext heco ucgf xwsv}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      
+      - APP_BASE_URL=http://localhost:8081
+    depends_on:
+      - mongodb
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mongo_data:
