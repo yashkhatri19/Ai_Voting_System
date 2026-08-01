@@ -39,100 +39,103 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .userDetailsService(userDetailsService)
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                        "/",
-                        "/health",
-                        "/register",
-                        "/login",
-                        "/verify-email-otp",
-                        "/swagger-ui/**",
-                        "/swagger-ui.html",
-                        "/v3/api-docs/**",
-                        "/swagger-resources/**",
-                        "/resend-verification-otp",
-                        "/forgot-password",
-                        "/verify-otp",
-                        "/reset-password",
-                        "/about",
-                        "/css/**",
-                        "/js/**",
-                        "/images/**",
-                        "/webjars/**"
-                ).permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/voter/**").hasRole("VOTER")
-                .requestMatchers("/ai/**").hasRole("VOTER")
-                    .requestMatchers("/login", "/register", "/css/**", "/js/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .formLogin(form -> form
-                .loginPage("/login")
-                .loginProcessingUrl("/login")
-                .usernameParameter("email")
-                .passwordParameter("password")
-                .successHandler((request, response, authentication) -> {
-                    String email = authentication.getName();
-                    String role = authentication.getAuthorities().iterator().next().getAuthority();
-                    
-                    // Generate JWT Access & Refresh tokens
-                    String accessToken = jwtUtils.generateAccessToken(email, role);
-                    String refreshToken = jwtUtils.generateRefreshToken(email);
-                    
-                    // Access Token Cookie (1 hour)
-                    Cookie accessCookie = new Cookie("accessToken", accessToken);
-                    accessCookie.setHttpOnly(true);
-                    accessCookie.setSecure(request.isSecure());
-                    accessCookie.setPath("/");
-                    accessCookie.setMaxAge(60 * 60);
-                    response.addCookie(accessCookie);
-                    
-                    // Refresh Token Cookie (7 days)
-                    Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-                    refreshCookie.setHttpOnly(true);
-                    refreshCookie.setSecure(request.isSecure());
-                    refreshCookie.setPath("/");
-                    refreshCookie.setMaxAge(7 * 24 * 60 * 60);
-                    response.addCookie(refreshCookie);
-                    
-                    response.sendRedirect(request.getContextPath() + "/login-success");
-                })
-                .failureUrl("/login?error=true")
-                .permitAll()
-            )
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessHandler((request, response, authentication) -> {
-                    // Delete Access Token Cookie
-                    Cookie accessCookie = new Cookie("accessToken", null);
-                    accessCookie.setHttpOnly(true);
-                    accessCookie.setPath("/");
-                    accessCookie.setMaxAge(0);
-                    response.addCookie(accessCookie);
-                    
-                    // Delete Refresh Token Cookie
-                    Cookie refreshCookie = new Cookie("refreshToken", null);
-                    refreshCookie.setHttpOnly(true);
-                    refreshCookie.setPath("/");
-                    refreshCookie.setMaxAge(0);
-                    response.addCookie(refreshCookie);
-                    
-                    response.sendRedirect(request.getContextPath() + "/login?logout=true");
-                })
-                .invalidateHttpSession(true)
-                .clearAuthentication(true)
-                .deleteCookies("JSESSIONID")
-                .permitAll()
-            )
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-            )
-            .headers(headers -> headers
-                // Disable client side caching to prevent back button security bypass
-                .cacheControl(cache -> cache.disable())
-            );
+                // 1. AI API ke liye CSRF disable karein (Taki AJAX POST request block na ho)
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/ai/**")
+                )
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .userDetailsService(userDetailsService)
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/",
+                                "/health",
+                                "/register",
+                                "/login",
+                                "/verify-email-otp",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**",
+                                "/swagger-resources/**",
+                                "/resend-verification-otp",
+                                "/forgot-password",
+                                "/verify-otp",
+                                "/reset-password",
+                                "/about",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/webjars/**"
+                        ).permitAll()
+                        .requestMatchers("/admin/**").hasAnyAuthority("ADMIN", "ROLE_ADMIN")
+                        .requestMatchers("/voter/**").hasAnyAuthority("VOTER", "ROLE_VOTER")
+                        // 2. /ai/** endpoints ko authenticated users ke liye allow karein (VOTER and ROLE_VOTER both supported)
+                        .requestMatchers("/ai/**").hasAnyAuthority("VOTER", "ROLE_VOTER")
+                        .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/login")
+                        .usernameParameter("email")
+                        .passwordParameter("password")
+                        .successHandler((request, response, authentication) -> {
+                            String email = authentication.getName();
+                            String role = authentication.getAuthorities().iterator().next().getAuthority();
+
+                            // Generate JWT Access & Refresh tokens
+                            String accessToken = jwtUtils.generateAccessToken(email, role);
+                            String refreshToken = jwtUtils.generateRefreshToken(email);
+
+                            // Access Token Cookie (1 hour)
+                            Cookie accessCookie = new Cookie("accessToken", accessToken);
+                            accessCookie.setHttpOnly(true);
+                            accessCookie.setSecure(request.isSecure());
+                            accessCookie.setPath("/");
+                            accessCookie.setMaxAge(60 * 60);
+                            response.addCookie(accessCookie);
+
+                            // Refresh Token Cookie (7 days)
+                            Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+                            refreshCookie.setHttpOnly(true);
+                            refreshCookie.setSecure(request.isSecure());
+                            refreshCookie.setPath("/");
+                            refreshCookie.setMaxAge(7 * 24 * 60 * 60);
+                            response.addCookie(refreshCookie);
+
+                            response.sendRedirect(request.getContextPath() + "/login-success");
+                        })
+                        .failureUrl("/login?error=true")
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessHandler((request, response, authentication) -> {
+                            // Delete Access Token Cookie
+                            Cookie accessCookie = new Cookie("accessToken", null);
+                            accessCookie.setHttpOnly(true);
+                            accessCookie.setPath("/");
+                            accessCookie.setMaxAge(0);
+                            response.addCookie(accessCookie);
+
+                            // Delete Refresh Token Cookie
+                            Cookie refreshCookie = new Cookie("refreshToken", null);
+                            refreshCookie.setHttpOnly(true);
+                            refreshCookie.setPath("/");
+                            refreshCookie.setMaxAge(0);
+                            response.addCookie(refreshCookie);
+
+                            response.sendRedirect(request.getContextPath() + "/login?logout=true");
+                        })
+                        .invalidateHttpSession(true)
+                        .clearAuthentication(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
+                )
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
+                .headers(headers -> headers
+                        .cacheControl(cache -> cache.disable())
+                );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

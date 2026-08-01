@@ -1,8 +1,8 @@
 package com.chhavi.controller;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.concurrent.ConcurrentHashMap;
 import com.chhavi.ai.OpenRouterClient;
 import com.chhavi.dto.CandidateRequestDto;
 import com.chhavi.pojo.Candidate;
@@ -36,19 +35,22 @@ public class CandidateController {
         this.openRouterClient = openRouterClient;
     }
 
-    // Admin View
+    // Admin View - List Candidates
     @GetMapping("/admin/candidates")
     public String adminListCandidates(Model model) {
         model.addAttribute("candidates", candidateRepository.findAll());
         return "admin/candidates";
     }
 
+    // Admin View - Show New Candidate Form
     @GetMapping("/admin/candidates/new")
     public String showCandidateForm(Model model) {
         model.addAttribute("candidateDto", new CandidateRequestDto());
+        model.addAttribute("candidateId", null); // Expressly pass null for NEW form
         return "admin/candidate-form";
     }
 
+    // Save New Candidate
     @PostMapping("/admin/candidates")
     public String saveCandidate(
             @Valid @ModelAttribute("candidateDto") CandidateRequestDto dto,
@@ -57,13 +59,14 @@ public class CandidateController {
             Model model) {
 
         if (result.hasErrors()) {
+            model.addAttribute("candidateId", null);
             return "admin/candidate-form";
         }
 
         Candidate candidate = new Candidate();
         candidate.setName(dto.getName());
         candidate.setParty(dto.getParty());
-        
+
         if (symbolImageFile != null && !symbolImageFile.isEmpty()) {
             try {
                 byte[] bytes = symbolImageFile.getBytes();
@@ -85,10 +88,11 @@ public class CandidateController {
         return "redirect:/admin/candidates";
     }
 
+    // Admin View - Show Edit Candidate Form
     @GetMapping("/admin/candidates/edit/{id}")
     public String showEditCandidateForm(@PathVariable String id, Model model) {
         Candidate candidate = candidateRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Candidate not found with ID: " + id));
 
         CandidateRequestDto dto = new CandidateRequestDto();
         dto.setName(candidate.getName());
@@ -98,10 +102,11 @@ public class CandidateController {
         dto.setProfileImage(candidate.getProfileImage());
 
         model.addAttribute("candidateDto", dto);
-        model.addAttribute("candidateId", id);
+        model.addAttribute("candidateId", id); // Expressly pass ID for EDIT form
         return "admin/candidate-form";
     }
 
+    // Update Existing Candidate
     @PostMapping("/admin/candidates/edit/{id}")
     public String updateCandidate(
             @PathVariable String id,
@@ -111,27 +116,29 @@ public class CandidateController {
             Model model) {
 
         if (result.hasErrors()) {
+            model.addAttribute("candidateId", id);
             return "admin/candidate-form";
         }
 
         Candidate candidate = candidateRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Candidate not found with ID: " + id));
 
         candidate.setName(dto.getName());
         candidate.setParty(dto.getParty());
-        
+
+        // Handle Symbol updates
         if (symbolImageFile != null && !symbolImageFile.isEmpty()) {
             try {
                 byte[] bytes = symbolImageFile.getBytes();
                 String base64Image = "data:" + symbolImageFile.getContentType() + ";base64," + java.util.Base64.getEncoder().encodeToString(bytes);
                 candidate.setSymbol(base64Image);
             } catch (Exception e) {
-                // keep old or fallback
+                if (dto.getSymbol() != null && !dto.getSymbol().trim().isEmpty()) {
+                    candidate.setSymbol(dto.getSymbol());
+                }
             }
-        } else {
-            if (dto.getSymbol() != null && !dto.getSymbol().trim().isEmpty() && !dto.getSymbol().startsWith("data:image")) {
-                candidate.setSymbol(dto.getSymbol());
-            }
+        } else if (dto.getSymbol() != null && !dto.getSymbol().trim().isEmpty()) {
+            candidate.setSymbol(dto.getSymbol());
         }
 
         candidate.setManifesto(dto.getManifesto());
@@ -146,15 +153,10 @@ public class CandidateController {
         return "redirect:/admin/candidates";
     }
 
+    // Delete Candidate
     @PostMapping("/admin/candidates/delete/{id}")
     public String deleteCandidate(@PathVariable String id, Model model) {
-        // Safe candidate deletion fix: check if votes exist for the candidate before deleting
         if (voteRepository.existsByCandidateId(id)) {
-            // Safe existing-data strategy: block deletion and present warning
-            // To pass message to front end we redirect with parameter or use FlashAttributes.
-            // For simple implementation we can delete associated votes if required, or block.
-            // As per requirements: "block deletion with a clear admin message, OR implement safe existing-data strategy"
-            // Let's block it or delete references. Blocking is safest to prevent data corruption.
             return "redirect:/admin/candidates?error=Cannot+delete+candidate+because+votes+have+already+been+cast+for+them.";
         }
         try {
@@ -165,13 +167,14 @@ public class CandidateController {
         return "redirect:/admin/candidates";
     }
 
-    // Voter View
+    // Voter View - List Candidates
     @GetMapping("/voter/candidates")
     public String voterListCandidates(Model model) {
         model.addAttribute("candidates", candidateRepository.findAll());
         return "voter/candidates";
     }
 
+    // Voter View - Candidate Details
     @GetMapping("/voter/candidates/{id}")
     public String voterCandidateDetails(
             @PathVariable String id,
@@ -213,7 +216,7 @@ public class CandidateController {
                     + "  - [Promise 2 in " + langName + "]\n"
                     + "  - [Promise 3 in " + langName + "]\n\n"
                     + "Strict Neutrality: Do not endorse, rank, compare, or recommend the candidate. Keep it objective and factual.";
-            
+
             return openRouterClient.generateContent(sysInstruction, manifesto, lang);
         });
 
@@ -240,7 +243,7 @@ public class CandidateController {
     private String getLocalizedNoManifestoMessage(String lang) {
         switch (lang.toLowerCase()) {
             case "hi": return "उम्मीदवार द्वारा कोई घोषणापत्र प्रदान नहीं किया गया।";
-            case "bn": return "প্রার্থীর কোনো ইশতেহার দেওয়া হয়নি।";
+            case "bn": return "প্রার্থীর কোনো ইশতেহার দেওয়া হয়নি।";
             case "te": return "అభ్యర్థి ద్వారా ఎలాంటి మేనిఫెస్టో అందించబడలేదు.";
             case "ta": return "வேட்பாளரால் தேர்தல் அறிக்கை எதுவும் வழங்கப்படவில்லை.";
             case "mr": return "उमेदवाराकडून कोणताही जाहीरनामा सादर केलेला नाही.";
@@ -257,13 +260,13 @@ public class CandidateController {
         switch (lang.toLowerCase()) {
             case "hi": return "घोषणापत्र AI सारांश के लिए बहुत लंबा है।";
             case "bn": return "ইশতেহারটি এআই সারসংক্ষেপের জন্য খুব দীর্ঘ।";
-            case "te": return "మేనిఫెస్టో AI సారాంశం కోసం చాలా పొಡవుగా ఉంది.";
+            case "te": return "మేనిഫెస్టో AI సారాంశం కోసం చాలా పొಡవుగా ఉంది.";
             case "ta": return "தேர்தல் அறிக்கை AI சுருக்கத்திற்கு மிகவும் நீளமாக உள்ளது.";
             case "mr": return "जाहीरनामा AI सारांशसाठी खूप मोठा आहे.";
             case "gu": return "ઢંઢેરો AI સારાંશ માટે ખૂબ લાંબો છે.";
             case "kn": return "ಪ್ರಣಾಳಿಕೆಯು AI ಸಾರಾಂಶಕ್ಕಾಗಿ ತುಂಬಾ ಉದ್ದವಾಗಿದೆ.";
             case "ml": return "മാനിഫെസ്റ്റോ AI സംഗ്രഹത്തിന് വളരെ ദൈര്‍ഘ്യമുള്ളതാണ്.";
-            case "pa": return "ਮਨੋਰਥ ਪੱਤਰ AI ਸਾਰਾਂਸ਼ ਲਈ ਬਹੁਤ ਲੰਮਾ ਹੈ।";
+            case "pa": return "ਮਨੋਰਥ ਪੱਤਰ AI ਸਾਰਾਂਸ਼ ਲਈ ਬਹੁਤ ਲੰਮਾ ਹੈ।";
             case "or": return "ଇସ୍ତାହାରଟି AI ସାରାଂଶ ପାଇଁ ଅତି ଦୀର୍ଘ ଅଟେ।";
             default: return "Manifesto is too long for AI summary.";
         }

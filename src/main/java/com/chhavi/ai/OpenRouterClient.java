@@ -19,10 +19,13 @@ import org.springframework.web.client.RestTemplate;
 @Component
 public class OpenRouterClient {
 
-    @Value("${openrouter.api.key:}")
-    private String apiKey;
+    @Value("${OPENROUTER_API_KEY:}")
+    private String openRouterApiKey;
 
-    @Value("${openrouter.model:google/gemini-flash-1.5}")
+    @Value("${groq.api.key:}")
+    private String groqApiKey;
+
+    @Value("${openrouter.model:meta-llama/llama-3.3-70b-instruct}")
     private String modelName;
 
     private final RestTemplate restTemplate;
@@ -34,14 +37,31 @@ public class OpenRouterClient {
         this.restTemplate = new RestTemplate(factory);
     }
 
+    // Helper method to retrieve valid API key
+    private String getEffectiveApiKey() {
+        String envKey = System.getenv("OPENROUTER_API_KEY");
+        if (envKey != null && !envKey.trim().isEmpty()) {
+            return envKey.trim();
+        }
+        if (openRouterApiKey != null && !openRouterApiKey.trim().isEmpty() && !"your_openrouter_api_key".equalsIgnoreCase(openRouterApiKey.trim())) {
+            return openRouterApiKey.trim();
+        }
+        if (groqApiKey != null && !groqApiKey.trim().isEmpty()) {
+            return groqApiKey.trim();
+        }
+        return null;
+    }
+
     public String generateContent(String systemInstruction, String prompt) {
         return generateContent(systemInstruction, prompt, "en");
     }
 
     @SuppressWarnings("unchecked")
     public String generateContent(String systemInstruction, List<Map<String, Object>> chatHistory, String lang) {
-        if (apiKey == null || apiKey.trim().isEmpty() || "your_openrouter_api_key".equals(apiKey.trim())) {
-            System.err.println("Configuration Error: OPENROUTER_API_KEY environment variable is missing.");
+        String activeApiKey = getEffectiveApiKey();
+
+        if (activeApiKey == null) {
+            System.err.println("Configuration Error: API Key is missing.");
             String lastPrompt = "";
             if (chatHistory != null && !chatHistory.isEmpty()) {
                 Map<String, Object> lastTurn = chatHistory.get(chatHistory.size() - 1);
@@ -58,8 +78,8 @@ public class OpenRouterClient {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + apiKey.trim());
-            headers.set("HTTP-Referer", "http://localhost:8081");
+            headers.set("Authorization", "Bearer " + activeApiKey);
+            headers.set("HTTP-Referer", "http://localhost:8080");
             headers.set("X-Title", "Vote India");
 
             List<Map<String, String>> messages = new ArrayList<>();
@@ -83,7 +103,12 @@ public class OpenRouterClient {
             }
 
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", modelName);
+            // Valid, active model on OpenRouter
+            String effectiveModel = (modelName == null || modelName.contains("gemini-flash-1.5"))
+                    ? "meta-llama/llama-3.3-70b-instruct"
+                    : modelName;
+
+            requestBody.put("model", effectiveModel);
             requestBody.put("messages", messages);
             requestBody.put("temperature", 0.2);
 
@@ -101,6 +126,9 @@ public class OpenRouterClient {
                 }
             }
             return "We couldn't generate an AI response right now.";
+        } catch (HttpClientErrorException e) {
+            System.err.println("OpenRouter Client Error: " + e.getResponseBodyAsString());
+            return "AI assistance is temporarily unavailable.";
         } catch (Exception e) {
             System.err.println("OpenRouter client error: " + e.getMessage());
             return "AI assistance is temporarily unavailable.";
@@ -109,8 +137,10 @@ public class OpenRouterClient {
 
     @SuppressWarnings("unchecked")
     public String generateContent(String systemInstruction, String prompt, String lang) {
-        if (apiKey == null || apiKey.trim().isEmpty() || "your_openrouter_api_key".equals(apiKey.trim())) {
-            System.err.println("Configuration Error: OPENROUTER_API_KEY environment variable is missing.");
+        String activeApiKey = getEffectiveApiKey();
+
+        if (activeApiKey == null) {
+            System.err.println("Configuration Error: API Key is missing.");
             if (systemInstruction != null && systemInstruction.toLowerCase().contains("summarize the provided candidate manifesto")) {
                 return generateLocalFallbackSummary(prompt, lang);
             }
@@ -122,8 +152,8 @@ public class OpenRouterClient {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("Authorization", "Bearer " + apiKey.trim());
-            headers.set("HTTP-Referer", "http://localhost:8081");
+            headers.set("Authorization", "Bearer " + activeApiKey);
+            headers.set("HTTP-Referer", "http://localhost:8080");
             headers.set("X-Title", "Vote India");
 
             List<Map<String, String>> messages = new ArrayList<>();
@@ -133,7 +163,11 @@ public class OpenRouterClient {
             messages.add(Map.of("role", "user", "content", prompt));
 
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", modelName);
+            String effectiveModel = (modelName == null || modelName.contains("gemini-flash-1.5"))
+                    ? "meta-llama/llama-3.3-70b-instruct"
+                    : modelName;
+
+            requestBody.put("model", effectiveModel);
             requestBody.put("messages", messages);
             requestBody.put("temperature", 0.2);
 
@@ -167,35 +201,35 @@ public class OpenRouterClient {
         if (manifesto == null || manifesto.trim().isEmpty()) {
             return "hi".equalsIgnoreCase(lang) ? "कोई घोषणापत्र प्रदान नहीं किया गया।" : "No manifesto provided.";
         }
-        
+
         String[] sentences = manifesto.split("(?<=[.!?])\\s+");
         List<String> keyPoints = new ArrayList<>();
-        
+
         for (String sentence : sentences) {
             String lower = sentence.toLowerCase();
-            if (lower.contains("promise") || lower.contains("will") || lower.contains("aim") || 
-                lower.contains("focus") || lower.contains("goal") || lower.contains("support") || 
-                lower.contains("provide") || lower.contains("improve") || lower.contains("create") ||
-                lower.contains("strengthen") || lower.contains("ensure") || lower.contains("develop")) {
+            if (lower.contains("promise") || lower.contains("will") || lower.contains("aim") ||
+                    lower.contains("focus") || lower.contains("goal") || lower.contains("support") ||
+                    lower.contains("provide") || lower.contains("improve") || lower.contains("create") ||
+                    lower.contains("strengthen") || lower.contains("ensure") || lower.contains("develop")) {
                 keyPoints.add(sentence.trim());
             }
             if (keyPoints.size() >= 4) {
                 break;
             }
         }
-        
+
         if (keyPoints.isEmpty()) {
             for (int i = 0; i < Math.min(sentences.length, 3); i++) {
                 keyPoints.add(sentences[i].trim());
             }
         }
-        
+
         List<String> translatedPoints = new ArrayList<>();
         for (String point : keyPoints) {
             String translatedPoint = translateText(point, lang);
             translatedPoints.add("• " + translatedPoint);
         }
-        
+
         String header = getLocalFallbackHeader(lang);
         return header + "\n\n" + String.join("\n", translatedPoints);
     }
@@ -205,9 +239,9 @@ public class OpenRouterClient {
             return text;
         }
         try {
-            String url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=" 
+            String url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl="
                     + targetLang + "&dt=t&q=" + java.net.URLEncoder.encode(text, "UTF-8");
-            
+
             RestTemplate translationTemplate = new RestTemplate();
             List<?> response = translationTemplate.getForObject(url, List.class);
             if (response != null && !response.isEmpty()) {
@@ -246,7 +280,7 @@ public class OpenRouterClient {
     private String generateOfflineChatResponse(String systemInstruction, String userMessage, String lang) {
         String englishMsg = translateText(userMessage, "en").toLowerCase();
         String response = "";
-        
+
         if (englishMsg.contains("age") || englishMsg.contains("vote age") || englishMsg.contains("voting age") || englishMsg.contains("eligible") || englishMsg.contains("eligibility") || englishMsg.contains("umra")) {
             response = "In India, the minimum age to vote is 18 years, as per the 61st Amendment Act of 1988.";
         } else if (englishMsg.contains("previous prime minister") || englishMsg.contains("pichla pradhan mantri") || englishMsg.contains("former prime minister")) {
@@ -264,14 +298,14 @@ public class OpenRouterClient {
         } else if (englishMsg.contains("how are elections") || englishMsg.contains("how elections") || englishMsg.contains("conducted")) {
             response = "Elections in India are conducted by the Election Commission of India (ECI) using Electronic Voting Machines (EVM) and Voter Verifiable Paper Audit Trail (VVPAT).";
         } else if (englishMsg.contains("last election") || englishMsg.contains("result") || englishMsg.contains("winner") || englishMsg.contains("past") || englishMsg.contains("closed") || englishMsg.contains("jeeta") || englishMsg.contains("pichla")) {
-            int start = systemInstruction.indexOf("Past Election Results:");
+            int start = systemInstruction != null ? systemInstruction.indexOf("Past Election Results:") : -1;
             if (start != -1) {
                 response = systemInstruction.substring(start);
             } else {
                 response = "No past election results are currently available.";
             }
         } else if (englishMsg.contains("election") || englishMsg.contains("poll") || englishMsg.contains("chunav") || englishMsg.contains("chal raha")) {
-            if (systemInstruction.contains("Active Election exists: Yes")) {
+            if (systemInstruction != null && systemInstruction.contains("Active Election exists: Yes")) {
                 int start = systemInstruction.indexOf("title: ") + 7;
                 int end = systemInstruction.indexOf("\n", start);
                 String title = systemInstruction.substring(start, end);
@@ -280,25 +314,29 @@ public class OpenRouterClient {
                 response = "Currently, there are no active elections.";
             }
         } else if (englishMsg.contains("candidate") || englishMsg.contains("ummeedwar") || englishMsg.contains("party") || englishMsg.contains("neta") || englishMsg.contains("list")) {
-            int start = systemInstruction.indexOf("Available candidates: ") + 22;
-            int end = systemInstruction.indexOf("\n", start);
-            String candidates = systemInstruction.substring(start, end);
-            if (candidates.trim().isEmpty() || candidates.equalsIgnoreCase("None")) {
-                response = "There are no candidates registered for the current election.";
+            int start = systemInstruction != null ? systemInstruction.indexOf("Available candidates: ") + 22 : -1;
+            int end = systemInstruction != null ? systemInstruction.indexOf("\n", start) : -1;
+            if (start != -1 && end != -1) {
+                String candidates = systemInstruction.substring(start, end);
+                if (candidates.trim().isEmpty() || candidates.equalsIgnoreCase("None")) {
+                    response = "There are no candidates registered for the current election.";
+                } else {
+                    response = "The registered candidates for the election are: " + candidates;
+                }
             } else {
-                response = "The registered candidates for the election are: " + candidates;
+                response = "There are no candidates registered for the current election.";
             }
         } else if (englishMsg.contains("how to vote") || englishMsg.contains("vote kaise") || englishMsg.contains("process") || englishMsg.contains("tarika") || englishMsg.contains("voted")) {
             response = "To cast your vote, please follow these steps:\n"
-                     + "1. Go to the 'Cast Vote' page on your dashboard.\n"
-                     + "2. Choose your preferred candidate.\n"
-                     + "3. Click the 'Submit Vote' button.";
+                    + "1. Go to the 'Cast Vote' page on your dashboard.\n"
+                    + "2. Choose your preferred candidate.\n"
+                    + "3. Click the 'Submit Vote' button.";
         } else if (englishMsg.contains("hello") || englishMsg.contains("hi") || englishMsg.contains("hey")) {
-            response = "Hello! I am your offline AI Voting Assistant. You can ask me about candidate manifestos, active elections, how to vote, or who the candidates are.";
+            response = "Hello! I am your AI Voting Assistant. You can ask me about candidate manifestos, active elections, how to vote, or general civics questions.";
         } else {
             response = "AI assistance is temporarily unavailable. Please try again later.";
         }
-        
+
         return translateText(response, lang);
     }
 }
